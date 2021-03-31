@@ -4,6 +4,7 @@
 #include "level.h"
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 int TileAt(int x, int y)
 {
@@ -46,10 +47,6 @@ int main()
 
     while(1)    // just temporary
     {
-        // the collisions and resolution works fine if I create the vector outside the
-        // while loop without clearing it each time. but the vector fills up with
-        // all tiles collided
-        // that is, no bounces or funny movements
         std::vector<Rect> rects;
         int tileIndex = -1;
 
@@ -64,6 +61,9 @@ int main()
             // update
             player.Update();
 
+            // check x first and resolve
+            player.Move(player.vel.x, 0);
+
             // collision
             // get tiles on tiles on each corner of the player
             // and put them on a vector if the tile is solid
@@ -72,9 +72,9 @@ int main()
             int right = (player.pos.x + player.size.x) / tileSize;
             int bottom = (player.pos.y + player.size.y) / tileSize;
 
-            for(int y = top; y <= bottom; ++y)
+            for(int x = left; x <= right; ++x)
             {
-                for(int x = left; x <= right; ++x)
+                for(int y = top; y <= bottom; ++y)
                 {
                     if(TileAt(x, y) == 1)
                     {
@@ -83,13 +83,6 @@ int main()
                 }
             }
 
-            //sorting the tiles doesnt work
-//            std::sort(rects.begin(), rects.end(), [](const auto& r1, const auto& r2){
-//                    return r1.x > r2.x;
-//                });
-
-            // check x first and resolve
-            player.Move(player.vel.x, 0);
             for(const auto& r : rects)
             {
                 if(CheckCollisionRect(player.GetRect(), r))
@@ -103,7 +96,7 @@ int main()
                     }
                     else
                     {
-                        player.pos.x += rightDist; // not working properly, bounces off
+                        player.pos.x += rightDist;
                     }
                     break;
                 }
@@ -111,6 +104,25 @@ int main()
 
             // check y after
             player.Move(0, player.vel.y);
+
+            rects.clear();
+
+            left = player.pos.x / tileSize;
+            top = player.pos.y / tileSize;
+            right = (player.pos.x + player.size.x) / tileSize;
+            bottom = (player.pos.y + player.size.y) / tileSize;
+
+            for(int x = left; x <= right; ++x)
+            {
+                for(int y = top; y <= bottom; ++y)
+                {
+                    if(TileAt(x, y) == 1)
+                    {
+                        rects.push_back({x * tileSize, y * tileSize, tileSize, tileSize});
+                    }
+                }
+            }
+
             for(const auto& r : rects)
             {
                 if(CheckCollisionRect(player.GetRect(), r))
@@ -124,7 +136,7 @@ int main()
                     }
                     else
                     {
-                        player.pos.y += bottomDist; // not working properly, bounces off and foes to the right
+                        player.pos.y += bottomDist;
                     }
                     break;
                 }

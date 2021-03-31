@@ -45,5 +45,5 @@ private:
     int levelWidth;
     int levelHeight;
     int tileSize;
-    const float speed = 3;
+    const float speed = 5;
 };
